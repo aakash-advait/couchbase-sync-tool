@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import MagicMock, call, patch
 
+from couchbase.exceptions import CouchbaseException
+
 from couchbase_sync import CouchbaseSync
 
 
@@ -78,7 +80,8 @@ class TestCouchbaseSync(unittest.TestCase):
         ]
         self.mock_source_cluster.query.return_value = mock_query_result
 
-        self.sync_manager.sync_collection("users", "profiles")
+        result = self.sync_manager.sync_collection("users", "profiles")
+        self.assertTrue(result)
 
         mock_ensure_collection.assert_called_once_with("users", "profiles")
 
@@ -97,7 +100,9 @@ class TestCouchbaseSync(unittest.TestCase):
         mock_collections = [MockCollectionSpec("profiles"), MockCollectionSpec("posts")]
         with patch.object(self.sync_manager, 'get_collections_for_scope', return_value=mock_collections) as mock_get_colls, \
              patch.object(self.sync_manager, 'sync_collection') as mock_sync_collection:
-            self.sync_manager.sync_scope("users")
+            mock_sync_collection.return_value = True
+            result = self.sync_manager.sync_scope("users")
+            self.assertTrue(result)
             mock_get_colls.assert_called_once_with("users")
             calls = [
                 call("users", "profiles"),
@@ -114,13 +119,42 @@ class TestCouchbaseSync(unittest.TestCase):
         self.mock_source_coll_manager.get_all_scopes.return_value = mock_scopes
 
         with patch.object(self.sync_manager, 'sync_scope') as mock_sync_scope:
-            self.sync_manager.sync_database()
+            mock_sync_scope.return_value = True
+            result = self.sync_manager.sync_database()
+            self.assertTrue(result)
             calls = [
                 call("users"),
                 call("inventory")
             ]
             mock_sync_scope.assert_has_calls(calls, any_order=True)
             self.assertEqual(mock_sync_scope.call_count, 2)
+
+    @patch('couchbase_sync.CouchbaseSync._ensure_collection_exists')
+    def test_sync_collection_failure_on_query(self, mock_ensure_collection):
+        self.mock_source_cluster.query.side_effect = CouchbaseException("Query failed")
+        result = self.sync_manager.sync_collection("users", "profiles")
+        self.assertFalse(result)
+
+    def test_sync_scope_failure(self):
+        mock_collections = [MockCollectionSpec("profiles"), MockCollectionSpec("posts")]
+        with patch.object(self.sync_manager, 'get_collections_for_scope', return_value=mock_collections), \
+             patch.object(self.sync_manager, 'sync_collection') as mock_sync_collection:
+            mock_sync_collection.side_effect = [True, False]
+            result = self.sync_manager.sync_scope("users")
+            self.assertFalse(result)
+
+    def test_sync_database_failure(self):
+        mock_scopes = [
+            MockScopeSpec("_default", ["_default"]),
+            MockScopeSpec("users", ["profiles"]),
+            MockScopeSpec("inventory", ["items"])
+        ]
+        self.mock_source_coll_manager.get_all_scopes.return_value = mock_scopes
+
+        with patch.object(self.sync_manager, 'sync_scope') as mock_sync_scope:
+            mock_sync_scope.side_effect = [True, False]
+            result = self.sync_manager.sync_database()
+            self.assertFalse(result)
 
 
 if __name__ == '__main__':

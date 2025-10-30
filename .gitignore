@@ -1,0 +1,52 @@
+# Aider
+.aider*
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Python virtual environment
+venv/
+.venv/
+env/
+ENV/
+pip-log.txt
+
+# Python cache files and artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Build and distribution artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+wheels/
+sdist/
+develop-eggs/
+parts/
+.installed.cfg
+
+# Test and coverage reports
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS-specific files
+.DS_Store

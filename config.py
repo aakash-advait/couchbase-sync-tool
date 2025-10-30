@@ -1,18 +1,22 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # SOURCE DATABASE CONFIGURATION
-# IMPORTANT: Replace these placeholder values with your actual source database credentials.
+# Credentials are loaded from the .env file.
 SOURCE_DB_CONFIG = {
-    "connection_string": "couchbase://localhost",
-    "username": "source_admin",
-    "password": "source_password",
-    "bucket_name": "source-bucket"
+    "connection_string": os.getenv("SOURCE_DB_CONNECTION_STRING"),
+    "username": os.getenv("SOURCE_DB_USERNAME"),
+    "password": os.getenv("SOURCE_DB_PASSWORD"),
+    "bucket_name": os.getenv("SOURCE_DB_BUCKET_NAME")
 }
 
 # DESTINATION DATABASE CONFIGURATION
-# IMPORTANT: Replace these placeholder values with your actual destination database credentials.
+# Credentials are loaded from the .env file.
 DESTINATION_DB_CONFIG = {
-    "connection_string": "couchbase://localhost",
-    "username": "dest_admin",
-    "password": "dest_password",
-    "bucket_name": "destination-bucket"
+    "connection_string": os.getenv("DESTINATION_DB_CONNECTION_STRING"),
+    "username": os.getenv("DESTINATION_DB_USERNAME"),
+    "password": os.getenv("DESTINATION_DB_PASSWORD"),
+    "bucket_name": os.getenv("DESTINATION_DB_BUCKET_NAME")
 }

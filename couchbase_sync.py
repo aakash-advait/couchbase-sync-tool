@@ -79,27 +79,35 @@ class CouchbaseSync:
                 doc_count += 1
 
             log.info(f"Successfully synced {doc_count} documents in collection '{scope_name}.{collection_name}'")
+            return True
 
         except CouchbaseException as e:
             log.error(f"An error occurred during collection sync: {e}")
+            return False
 
     def sync_scope(self, scope_name):
         log.info(f"Starting sync for scope '{scope_name}'")
         collections = self.get_collections_for_scope(scope_name)
+        all_successful = True
         for collection in collections:
             if collection.name.startswith('_'):
                 continue
-            self.sync_collection(scope_name, collection.name)
+            if not self.sync_collection(scope_name, collection.name):
+                all_successful = False
         log.info(f"Finished sync for scope '{scope_name}'")
+        return all_successful
 
     def sync_database(self):
         log.info(f"Starting sync for bucket '{self.source_bucket_name}'")
         scopes = self.get_scopes()
+        all_successful = True
         for scope in scopes:
             if scope.name.startswith('_'):
                 continue
-            self.sync_scope(scope.name)
+            if not self.sync_scope(scope.name):
+                all_successful = False
         log.info(f"Finished sync for bucket '{self.source_bucket_name}'")
+        return all_successful
 
 
 def connect_to_couchbase(config):
