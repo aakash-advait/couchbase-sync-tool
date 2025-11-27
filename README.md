@@ -85,3 +85,9 @@ python3 tests/test_couchbase_sync.py
 ## Contributing
 
 Contributions are welcome! If you find a bug or have a suggestion for improvement, please open an issue or submit a pull request.
+
+# TODO
+- [ ] Metadata sync
+- [ ] Index sync
+- [ ] Partial sync of some docs based on a where clause.
+
